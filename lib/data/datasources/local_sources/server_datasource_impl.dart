@@ -19,9 +19,9 @@ import 'package:vpn_plugin/models/upstream_protocol.dart';
 /// are stored in `dnsServers` and linked by `serverId`.
 ///
 /// ### Consistency notes
-/// Some operations update multiple tables (server row + DNS rows). If strict
-/// atomicity is required, wrap these calls in a Drift transaction at a higher
-/// layer.
+/// Adding a server stores its server row, DNS entries, and certificate in one
+/// transaction. Other operations that update multiple tables require a
+/// transaction at a higher layer when atomicity is needed.
 /// {@endtemplate}
 class ServerDataSourceImpl implements ServerDataSource {
   /// Drift database used for persistence.
@@ -37,7 +37,7 @@ class ServerDataSourceImpl implements ServerDataSource {
 
   /// {@macro server_data_source_add_new_server}
   @override
-  Future<Server> addNewServer({required ServerData request}) async {
+  Future<Server> addNewServer({required ServerData request}) => database.transaction(() async {
     final id = await database.servers.insertOnConflictUpdate(
       db.ServersCompanion.insert(
         ipAddress: request.ipAddress,
@@ -93,7 +93,7 @@ class ServerDataSourceImpl implements ServerDataSource {
         customSni: request.customSni,
       ),
     );
-  }
+  });
 
   /// {@macro server_data_source_get_all_servers}
   ///

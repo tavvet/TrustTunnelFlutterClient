@@ -7,6 +7,8 @@ class DefaultPage extends StatelessWidget {
   final String? descriptionText;
   final String? buttonText;
   final VoidCallback? onButtonPressed;
+  final String? secondaryButtonText;
+  final VoidCallback? onSecondaryButtonPressed;
   final String imagePath;
   final Size imageSize;
 
@@ -21,6 +23,8 @@ class DefaultPage extends StatelessWidget {
     this.descriptionText,
     this.buttonText,
     this.onButtonPressed,
+    this.secondaryButtonText,
+    this.onSecondaryButtonPressed,
   }) : _desktopImageSize = null,
        _desktopImagePath = null;
 
@@ -33,6 +37,8 @@ class DefaultPage extends StatelessWidget {
     this.descriptionText,
     this.buttonText,
     this.onButtonPressed,
+    this.secondaryButtonText,
+    this.onSecondaryButtonPressed,
     String? desktopImagePath,
   }) : _desktopImagePath = desktopImagePath ?? imagePath;
 
@@ -60,9 +66,10 @@ class DefaultPage extends StatelessWidget {
             MediaQuery.navigationModeOf(context) == NavigationMode.directional &&
             constraints.hasBoundedHeight &&
             constraints.maxWidth > constraints.maxHeight;
-        // Leave room for the title, description and action in a short TV viewport.
+        // Leave room for the title, description and actions in a short TV viewport.
+        final illustrationFraction = secondaryButtonText == null ? 0.35 : 0.2;
         final illustrationHeight = isTvLandscape
-            ? (constraints.maxHeight * 0.35).clamp(0.0, imageSize.height)
+            ? (constraints.maxHeight * illustrationFraction).clamp(0.0, imageSize.height)
             : imageSize.height;
 
         return _buildContent(
@@ -120,6 +127,14 @@ class DefaultPage extends StatelessWidget {
                   child: FilledButton(
                     onPressed: onButtonPressed,
                     child: Text(buttonText!),
+                  ),
+                ),
+              if (secondaryButtonText != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
+                  child: OutlinedButton(
+                    onPressed: onSecondaryButtonPressed,
+                    child: Text(secondaryButtonText!),
                   ),
                 ),
             ],

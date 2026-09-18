@@ -34,6 +34,37 @@ Enable network debugging on the Shield and accept the Mac's authorization prompt
 on the TV. If macOS reports `No route to host` even on the same subnet, check the
 device address, network isolation and the terminal/app's Local Network permission.
 
+## Import a server from another device
+
+On TV, choose **Import from phone or computer** on the empty Servers screen, or
+use the import action at the top of an existing server list. The TV opens a local
+page for five minutes and displays its address, QR code and a six-digit pairing
+code. Connect the phone or computer to the same home network:
+
+1. Scan the QR code, or open the displayed HTTP address in a browser and enter
+   the pairing code. A QR scan supplies its own session credential.
+2. Paste the complete `tt://?…` server link and select **Send to TV**.
+3. Review the server name, address, certificate domain and protocol on the TV,
+   then select **Add** with the remote. Importing does not start the VPN.
+
+The browser page is served by the TV; no account, cloud upload or additional
+phone app is required. Use a trusted home network: this local HTTP transfer is
+not encrypted. The session closes after receiving one valid configuration, on
+timeout, after five incorrect pairing codes, when leaving the import screen, or
+when the TV app goes into the background. Canceling the review saves nothing.
+
+This imports server settings only. It uses the existing TrustTunnel link decoder
+and the default routing profile; it does not import routing rules or TOML files.
+As with existing deep links, only the first endpoint address is retained.
+Credentials are preserved verbatim, duplicate DNS entries are removed and
+duplicate server names receive a numeric suffix. All server records are saved in
+one database transaction.
+
+If the browser cannot connect, check that both devices are on the same network
+and that guest Wi-Fi/client isolation is disabled. Start a fresh import session
+after changing networks or returning to the app. The first version requires a
+private IPv4 address on Wi-Fi or Ethernet.
+
 ## Device acceptance checks
 
 Run these with only the standard remote, without a mouse or touchscreen:
@@ -42,6 +73,12 @@ Run these with only the standard remote, without a mouse or touchscreen:
   and visible initial focus.
 - Move between the navigation rail and page content in both directions. Switch
   between Servers, Routing and Settings, including empty lists.
+- Import a test link using the QR code and separately using the address and
+  pairing code. Reject a malformed link, then retry with a valid one. Confirm
+  with the remote, relaunch the app and check the saved fields. Repeat a server
+  name without overwriting the original. Cancel a received server and check
+  that it is absent. Verify that Back, Home, expiry and successful receipt close
+  the HTTP listener; no live endpoint should remain in the background.
 - Add a server. Reach each field, open and close the on-screen keyboard with OK
   and Back, and move to the next field after the keyboard closes. Reopen the
   keyboard on an already focused field. Select the protocol and routing profile,
@@ -69,13 +106,14 @@ use translucent state overlays and a three-pixel focus border so the outline
 remains visible during focus, hover and press. Focus does not change the control's
 outer bounds. Disabled styling takes priority over interactive states.
 
-- Follow focus through the server row, connection button and Add server button.
-  Connected/disconnected is the button's selected state; the focus border must
-  be distinguishable from that state.
+- Follow focus through the server row, connection button, import action and Add
+  server button. Connected/disconnected is the button's selected state; the
+  focus border must be distinguishable from that state.
 - Connect, cancel, reconnect and disconnect. The connection button must retain
   focus when its icon changes; only the progress icon should rotate.
-- Check the Create button on the empty Servers screen. Move off a button and
-  confirm that its focus border disappears without shifting the layout.
+- Check both buttons on the empty Servers screen, including the lower outlined
+  button. Move off a button and confirm that its focus border disappears while
+  its normal outline remains.
 - Open menus and dialogs, press and release OK, and return with Back. Check
   focused, disabled, selected and validation-error states as well as idle ones.
 - Use long profile names and increased system font size. Popup labels must wrap
@@ -90,3 +128,11 @@ Regression tests include rendered focus-border contrast, stable button bounds,
 VPN state transitions, remote scrolling and layout with long text/increased
 text scale. Recheck these states on hardware when changing shared themes or
 page wrappers.
+
+The browser import page has additional regression tests for QR/PIN authorization,
+history restoration and independent device clocks. Run these with Node.js 18 or
+newer (no npm packages are needed):
+
+```sh
+node --test test/feature/server_import/local_import_page_test.mjs
+```

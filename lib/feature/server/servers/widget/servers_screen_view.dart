@@ -6,6 +6,7 @@ import 'package:trusttunnel/common/router/app_routes.dart';
 import 'package:trusttunnel/data/model/server.dart';
 import 'package:trusttunnel/data/model/server_data.dart';
 import 'package:trusttunnel/feature/server/server_details/widgets/server_details_popup.dart';
+import 'package:trusttunnel/feature/server/server_import/server_import_actions.dart';
 import 'package:trusttunnel/feature/server/servers/widget/scope/servers_scope.dart';
 import 'package:trusttunnel/feature/server/servers/widget/scope/servers_scope_aspect.dart';
 import 'package:trusttunnel/feature/server/servers/widget/servers_card.dart';
@@ -64,6 +65,14 @@ class _ServersScreenViewState extends State<ServersScreenView> {
       child: Scaffold(
         appBar: CustomAppBar(
           title: context.ln.servers,
+          actions: [
+            if (_servers.isNotEmpty && MediaQuery.navigationModeOf(context) == NavigationMode.directional)
+              TextButton.icon(
+                onPressed: () => importServerFromDevice(context),
+                icon: const Icon(Icons.qr_code),
+                label: Text(context.ln.importFromPhone),
+              ),
+          ],
         ),
         body: _servers.isEmpty
             ? const ServersEmptyPlaceholder()

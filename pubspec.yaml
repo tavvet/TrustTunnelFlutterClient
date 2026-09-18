@@ -34,6 +34,7 @@ dependencies:
   package_info_plus: 9.0.0
   path_provider: 2.1.6
   punycoder: 0.2.2
+  qr_flutter: 4.1.0
   rxdart: 0.28.0
   screen_retriever: 0.2.0
   shared_preferences: 2.5.5
