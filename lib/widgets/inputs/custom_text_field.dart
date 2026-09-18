@@ -100,7 +100,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
     _scrollController = ScrollController();
     _controller = widget.controller ?? TextEditingController();
     _controller.text = widget.value ?? '';
-    _focusNode = FocusScopeNode(traversalEdgeBehavior: TraversalEdgeBehavior.parentScope);
+    _focusNode = FocusScopeNode(
+      traversalEdgeBehavior: TraversalEdgeBehavior.parentScope,
+      directionalTraversalEdgeBehavior: TraversalEdgeBehavior.parentScope,
+    );
   }
 
   @override
@@ -149,7 +152,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       );
     }
 
-    return FocusScope(
+    final field = FocusScope(
       node: _focusNode,
       skipTraversal: !widget.enabled,
       onFocusChange: _scrollToStartOnFocusLost,
@@ -185,6 +188,46 @@ class _CustomTextFieldState extends State<CustomTextField> {
             helperMaxLines: 3,
           ),
         ),
+      ),
+    );
+
+    if (MediaQuery.navigationModeOf(context) != NavigationMode.directional) {
+      return field;
+    }
+
+    // TV remotes use arrows to leave the field; the on-screen keyboard handles
+    // editing. Keep normal caret shortcuts on phones and desktop keyboards.
+    return Shortcuts(
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.arrowUp): DirectionalFocusIntent(
+          TraversalDirection.up,
+          ignoreTextFields: false,
+        ),
+        SingleActivator(LogicalKeyboardKey.arrowDown): DirectionalFocusIntent(
+          TraversalDirection.down,
+          ignoreTextFields: false,
+        ),
+        SingleActivator(LogicalKeyboardKey.arrowLeft): DirectionalFocusIntent(
+          TraversalDirection.left,
+          ignoreTextFields: false,
+        ),
+        SingleActivator(LogicalKeyboardKey.arrowRight): DirectionalFocusIntent(
+          TraversalDirection.right,
+          ignoreTextFields: false,
+        ),
+      },
+      child: Actions(
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              FocusManager.instance.primaryFocus?.context
+                  ?.findAncestorStateOfType<EditableTextState>()
+                  ?.requestKeyboard();
+              return null;
+            },
+          ),
+        },
+        child: field,
       ),
     );
   }

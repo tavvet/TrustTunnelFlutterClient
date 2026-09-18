@@ -20,32 +20,33 @@ class CustomCheckboxListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onChanged != null;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: enabled ? () => onChanged?.call(!value) : null,
-        child: Padding(
-          padding: padding,
-          child: Row(
-            children: [
-              IgnorePointer(
-                child: SizedBox.square(
-                  dimension: 18,
-                  child: Checkbox(
-                    value: value,
-                    onChanged: enabled ? (_) {} : null,
+    return ExcludeFocus(
+      excluding: !enabled,
+      child: MergeSemantics(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: enabled ? () => onChanged?.call(!value) : null,
+            child: Padding(
+              padding: padding,
+              child: Row(
+                children: [
+                  ExcludeFocus(
+                    child: IgnorePointer(
+                      child: SizedBox.square(
+                        dimension: 18,
+                        child: Checkbox(value: value, onChanged: enabled ? (_) {} : null),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Padding(padding: const EdgeInsets.symmetric(vertical: 2), child: title),
+                  ),
+                  trailing ?? const SizedBox.shrink(),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: title,
-                ),
-              ),
-              trailing ?? const SizedBox.shrink(),
-            ],
+            ),
           ),
         ),
       ),

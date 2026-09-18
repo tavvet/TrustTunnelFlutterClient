@@ -7,6 +7,7 @@ import 'package:trusttunnel/common/logging/app_logger.dart';
 import 'package:trusttunnel/common/logging/extensions/db_logger_extension.dart';
 import 'package:trusttunnel/common/logging/extensions/global_error_logger_extension.dart';
 import 'package:trusttunnel/common/logging/extensions/vpn_logger_extension.dart';
+import 'package:trusttunnel/common/utils/device_utils.dart';
 import 'package:trusttunnel/di/model/initialization_helper.dart';
 import 'package:trusttunnel/di/widgets/dependency_scope.dart';
 import 'package:trusttunnel/feature/app/app.dart';
@@ -36,7 +37,11 @@ Future<void> main() async {
       WidgetsFlutterBinding.ensureInitialized();
       _applyGlobalErrorHandling(dispatchError);
 
-      final initializationHelper = await const InitializationHelperIo().init();
+      final isTelevision = await DeviceUtils.isTelevision();
+      if (isTelevision) {
+        FocusManager.instance.highlightStrategy = FocusHighlightStrategy.alwaysTraditional;
+      }
+      final initializationHelper = await InitializationHelperIo(isTelevision: isTelevision).init();
 
       runApp(
         DependencyScope(
@@ -51,11 +56,11 @@ Future<void> main() async {
                       : null,
                   vpnRepository: initializationHelper.repositoryFactory.vpnRepository,
                   initialState: initializationHelper.initialVpnState,
-                  child: const ServersScope(
+                  child: ServersScope(
                     child: AutoConnectOnLaunchSettingsScope(
                       child: VpnUpdateManager(
                         child: DeepLinkScope(
-                          child: App(),
+                          child: App(isTelevision: isTelevision),
                         ),
                       ),
                     ),

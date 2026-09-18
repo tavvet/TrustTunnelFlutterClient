@@ -54,55 +54,78 @@ class DefaultPage extends StatelessWidget {
       imageSize = _desktopImageSize ?? this.imageSize;
     }
 
-    return Center(
-      child: SingleChildScrollView(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset(
-                  imagePath,
-                  width: imageSize.width,
-                  height: imageSize.height,
-                  fit: BoxFit.contain,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTvLandscape =
+            MediaQuery.navigationModeOf(context) == NavigationMode.directional &&
+            constraints.hasBoundedHeight &&
+            constraints.maxWidth > constraints.maxHeight;
+        // Leave room for the title, description and action in a short TV viewport.
+        final illustrationHeight = isTvLandscape
+            ? (constraints.maxHeight * 0.35).clamp(0.0, imageSize.height)
+            : imageSize.height;
+
+        return _buildContent(
+          context,
+          imagePath: imagePath,
+          imageSize: Size(imageSize.width, illustrationHeight),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context, {
+    required String imagePath,
+    required Size imageSize,
+  }) => Center(
+    child: SingleChildScrollView(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                imagePath,
+                width: imageSize.width,
+                height: imageSize.height,
+                fit: BoxFit.contain,
+              ),
+              Padding(
+                padding: context.isMobileBreakpoint
+                    ? const EdgeInsets.only(left: 24, right: 24, top: 8, bottom: 12)
+                    : const EdgeInsets.only(left: 44, right: 44, top: 8, bottom: 12),
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: context.textTheme.headlineMedium,
                 ),
+              ),
+              if (descriptionText != null)
                 Padding(
                   padding: context.isMobileBreakpoint
-                      ? const EdgeInsets.only(left: 24, right: 24, top: 8, bottom: 12)
-                      : const EdgeInsets.only(left: 44, right: 44, top: 8, bottom: 12),
+                      ? const EdgeInsets.only(left: 24, right: 24, bottom: 16)
+                      : const EdgeInsets.only(left: 44, right: 44, bottom: 16),
                   child: Text(
-                    title,
+                    descriptionText!,
                     textAlign: TextAlign.center,
-                    style: context.textTheme.headlineMedium,
+                    style: context.textTheme.bodyMedium,
                   ),
                 ),
-                if (descriptionText != null)
-                  Padding(
-                    padding: context.isMobileBreakpoint
-                        ? const EdgeInsets.only(left: 24, right: 24, bottom: 16)
-                        : const EdgeInsets.only(left: 44, right: 44, bottom: 16),
-                    child: Text(
-                      descriptionText!,
-                      textAlign: TextAlign.center,
-                      style: context.textTheme.bodyMedium,
-                    ),
+              if (buttonText != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: FilledButton(
+                    onPressed: onButtonPressed,
+                    child: Text(buttonText!),
                   ),
-                if (buttonText != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: FilledButton(
-                      onPressed: onButtonPressed,
-                      child: Text(buttonText!),
-                    ),
-                  ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

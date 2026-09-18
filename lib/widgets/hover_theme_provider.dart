@@ -13,7 +13,6 @@ class HoverThemeProvider extends StatelessWidget {
   Widget build(BuildContext context) => Theme(
     data: context.theme.copyWith(
       hoverColor: context.colors.staticTransparent,
-      focusColor: context.colors.staticTransparent,
     ),
     child: child,
   );

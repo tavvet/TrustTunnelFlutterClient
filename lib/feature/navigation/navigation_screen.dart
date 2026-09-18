@@ -34,6 +34,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
   late final LoggingNavigatorObserver _navigatorObserver;
 
   ServerData? _deepLinkData;
+  bool _initialFocusScheduled = false;
 
   /// Because exit handling and interaction with the related dialog in [VpnScope] (above the [MaterialApp])
   /// and we can't react to an error right where we catch it, we need to listen to it here
@@ -59,6 +60,15 @@ class _NavigationScreenState extends State<NavigationScreen> {
       _disconnectOnExitErrorListenable?.removeListener(_onDisconnectOnExitError);
       _disconnectOnExitErrorListenable = disconnectOnExitErrorListenable;
       _disconnectOnExitErrorListenable?.addListener(_onDisconnectOnExitError);
+    }
+
+    if (!_initialFocusScheduled && MediaQuery.navigationModeOf(context) == NavigationMode.directional) {
+      _initialFocusScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          FocusScope.of(context).nextFocus();
+        }
+      });
     }
 
     final fetchedDeepLink = DeepLinkScope.of(context).deepLinkData;
@@ -155,6 +165,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
     onPopWithResult: (_) => _navigatorKey.currentState!.maybePop(),
     child: Navigator(
       key: _navigatorKey,
+      // Let the remote move back from the page to the navigation rail.
+      routeDirectionalTraversalEdgeBehavior: TraversalEdgeBehavior.parentScope,
       observers: [_navigatorObserver],
       onGenerateInitialRoutes: (_, _) => [
         PageRouteBuilder(

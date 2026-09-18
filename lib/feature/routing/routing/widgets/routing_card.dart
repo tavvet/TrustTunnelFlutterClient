@@ -39,9 +39,11 @@ class RoutingCard extends StatelessWidget {
                 size: 24,
               ),
               const SizedBox(width: 12),
-              Text(
-                context.ln.editProfileName,
-                style: context.textTheme.bodyLarge,
+              Expanded(
+                child: Text(
+                  context.ln.editProfileName,
+                  style: context.textTheme.bodyLarge,
+                ),
               ),
             ],
           ),
@@ -56,10 +58,12 @@ class RoutingCard extends StatelessWidget {
                   color: context.colors.error,
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  context.ln.deleteProfile,
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    color: context.colors.error,
+                Expanded(
+                  child: Text(
+                    context.ln.deleteProfile,
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      color: context.colors.error,
+                    ),
                   ),
                 ),
               ],

@@ -9,7 +9,9 @@ import 'package:trusttunnel/feature/app/widgets/app_system_ui_shell.dart';
 import 'package:trusttunnel/feature/navigation/navigation_screen.dart';
 
 class App extends StatefulWidget {
-  const App({super.key});
+  final bool isTelevision;
+
+  const App({this.isTelevision = false, super.key});
 
   @override
   State<App> createState() => _AppState();
@@ -36,7 +38,12 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) => MaterialApp(
     theme: context.dependencyFactory.lightThemeData,
     builder: (context, child) => AppSystemActionsHandler(
-      child: child!,
+      child: widget.isTelevision
+          ? MediaQuery(
+              data: MediaQuery.of(context).copyWith(navigationMode: NavigationMode.directional),
+              child: child!,
+            )
+          : child!,
     ),
     navigatorObservers: [
       LoggingNavigatorObserver(

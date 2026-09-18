@@ -38,9 +38,11 @@ class RoutingDetailsScreenAppBarAction extends StatelessWidget {
               icon: AssetIcons.update,
             ),
             const SizedBox(width: 12),
-            Text(
-              context.ln.changeDefaultRoutingMode,
-              style: context.textTheme.bodyLarge,
+            Expanded(
+              child: Text(
+                context.ln.changeDefaultRoutingMode,
+                style: context.textTheme.bodyLarge,
+              ),
             ),
           ],
         ),
@@ -54,10 +56,12 @@ class RoutingDetailsScreenAppBarAction extends StatelessWidget {
               color: context.colors.error,
             ),
             const SizedBox(width: 12),
-            Text(
-              context.ln.deleteAllRules,
-              style: context.textTheme.bodyLarge?.copyWith(
-                color: context.colors.error,
+            Expanded(
+              child: Text(
+                context.ln.deleteAllRules,
+                style: context.textTheme.bodyLarge?.copyWith(
+                  color: context.colors.error,
+                ),
               ),
             ),
           ],

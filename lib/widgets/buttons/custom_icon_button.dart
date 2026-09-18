@@ -64,13 +64,13 @@ class CustomIconButton extends StatefulWidget {
     this.onPressed,
     this.selectedIconWidget,
     this.padding,
+    this.tooltip,
+    this.selected = false,
   }) : color = null,
        width = null,
        height = null,
-       tooltip = null,
        icon = null,
-       selectedIcon = null,
-       selected = false;
+       selectedIcon = null;
 
   @override
   State<CustomIconButton> createState() => _CustomIconButtonState();

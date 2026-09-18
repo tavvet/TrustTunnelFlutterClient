@@ -26,7 +26,9 @@ abstract class InitializationHelper {
 }
 
 class InitializationHelperIo extends InitializationHelper {
-  const InitializationHelperIo();
+  final bool isTelevision;
+
+  const InitializationHelperIo({this.isTelevision = false});
 
   @override
   Future<InitializationResult> init() async {
@@ -134,6 +136,14 @@ class InitializationHelperIo extends InitializationHelper {
   }
 
   Future<void> _updateDeviceOrientation() async {
+    if (isTelevision) {
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+      return;
+    }
+
     final isWideScreen = PlatformDispatcher.instance.views.every(
       (view) => (view.physicalSize.shortestSide / view.devicePixelRatio) >= 600,
     );

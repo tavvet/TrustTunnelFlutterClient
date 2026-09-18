@@ -25,8 +25,6 @@ class LightTheme {
   static const _errorPressed = Color(0xFFD02C0B);
   static const _errorDisabled = Color(0x80F56447);
   static const _background = Color(0xFFFFFFFF);
-  static const _backgroundHover = Color(0xFFF6F7F9);
-  static const _backgroundPressed = Color(0xFFE6EAEF);
 
   static const _neutralBlend = Color(0x1A30353B);
 
@@ -52,6 +50,31 @@ class LightTheme {
   static const _specialStaticWhitePressed = Color(0xFFE6EAEF);
   static const _specialStaticWhiteDisabled = Color(0x80FFFFFF);
   static const _staticTransparent = Colors.transparent;
+
+  // Button ink is painted above its border. Keep state overlays translucent so
+  // the focus ring remains visible while the button is hovered or pressed.
+  static Color? _filledButtonOverlay(Set<WidgetState> states) {
+    if (states.contains(WidgetState.disabled)) return _staticTransparent;
+    if (states.contains(WidgetState.pressed)) return Colors.black.withValues(alpha: 0.2);
+    if (states.contains(WidgetState.focused)) return Colors.black.withValues(alpha: 0.12);
+    if (states.contains(WidgetState.hovered)) return Colors.black.withValues(alpha: 0.1);
+    return null;
+  }
+
+  static Color? _unfilledButtonOverlay(Set<WidgetState> states) {
+    if (states.contains(WidgetState.disabled)) return _staticTransparent;
+    if (states.contains(WidgetState.pressed)) return _blendPressed;
+    if (states.contains(WidgetState.focused)) return _blend;
+    if (states.contains(WidgetState.hovered)) return _neutralBlend;
+    return _staticTransparent;
+  }
+
+  static BorderSide _buttonFocusSide(Set<WidgetState> states, {bool filled = false}) {
+    if (!states.contains(WidgetState.disabled) && states.contains(WidgetState.focused)) {
+      return BorderSide(color: filled ? _neutralBlack : _accent, width: 3);
+    }
+    return BorderSide.none;
+  }
 
   static const _appSystemTitleBarBackground = Color(0xFFFFFFFF);
   static const _appSystemTitleBarTitle = Color(0xFF3D3D3D);
@@ -230,14 +253,8 @@ class LightTheme {
       foregroundColor: const WidgetStatePropertyAll(
         _specialStaticWhite,
       ),
-      overlayColor: WidgetStateProperty.resolveWith(
-        (states) {
-          if (states.contains(WidgetState.pressed) || states.contains(WidgetState.focused)) return _backgroundHover;
-          if (states.contains(WidgetState.hovered)) return _backgroundPressed;
-
-          return null;
-        },
-      ),
+      side: WidgetStateProperty.resolveWith(_buttonFocusSide),
+      overlayColor: WidgetStateProperty.resolveWith(_unfilledButtonOverlay),
       mouseCursor: WidgetStateProperty.resolveWith(
         (states) {
           if (states.contains(WidgetState.disabled)) return SystemMouseCursors.basic;
@@ -309,7 +326,9 @@ class LightTheme {
         return _contrast1;
       },
     ),
-    overlayColor: const WidgetStatePropertyAll(_staticTransparent),
+    overlayColor: WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.focused) ? _blendHover : _staticTransparent,
+    ),
     trackOutlineWidth: WidgetStateProperty.resolveWith(
       (states) {
         if (!states.contains(WidgetState.selected)) return 2;
@@ -359,14 +378,6 @@ class LightTheme {
             return _error;
           },
         ),
-        overlayColor: WidgetStateProperty.resolveWith(
-          (states) {
-            if (states.contains(WidgetState.pressed)) return _errorPressed;
-            if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) return _errorHover;
-
-            return null;
-          },
-        ),
       ),
     ),
     attention: FilledButtonThemeData(
@@ -376,14 +387,6 @@ class LightTheme {
             if (states.contains(WidgetState.disabled)) return _attention.withValues(alpha: 0.5);
 
             return _attention;
-          },
-        ),
-        overlayColor: WidgetStateProperty.resolveWith(
-          (states) {
-            if (states.contains(WidgetState.pressed)) return _attentionPressed;
-            if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) return _attentionHover;
-
-            return null;
           },
         ),
       ),
@@ -473,14 +476,8 @@ class LightTheme {
         },
       ),
       foregroundColor: const WidgetStatePropertyAll(_specialStaticWhite),
-      overlayColor: WidgetStateProperty.resolveWith(
-        (states) {
-          if (states.contains(WidgetState.pressed)) return _accentPressed;
-          if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) return _accentHover;
-
-          return null;
-        },
-      ),
+      side: WidgetStateProperty.resolveWith((states) => _buttonFocusSide(states, filled: true)),
+      overlayColor: WidgetStateProperty.resolveWith(_filledButtonOverlay),
       textStyle: WidgetStatePropertyAll(_textTheme.labelLarge),
       padding: const WidgetStatePropertyAll(
         EdgeInsets.symmetric(horizontal: 24, vertical: 10),
@@ -503,31 +500,17 @@ class LightTheme {
           return _neutralBlack;
         },
       ),
-      shape: WidgetStateProperty.resolveWith(
+      shape: const WidgetStatePropertyAll(StadiumBorder()),
+      side: WidgetStateProperty.resolveWith(
         (states) {
-          final Color borderColor;
-
           if (states.contains(WidgetState.disabled)) {
-            borderColor = _neutralLight;
-          } else {
-            borderColor = _neutralBlack;
+            return const BorderSide(color: _neutralLight);
           }
-
-          return StadiumBorder(
-            side: BorderSide(
-              color: borderColor,
-            ),
-          );
+          if (states.contains(WidgetState.focused)) return _buttonFocusSide(states);
+          return const BorderSide(color: _neutralBlack);
         },
       ),
-      overlayColor: WidgetStateProperty.resolveWith(
-        (states) {
-          if (states.contains(WidgetState.pressed)) return _backgroundPressed;
-          if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) return _backgroundHover;
-
-          return null;
-        },
-      ),
+      overlayColor: WidgetStateProperty.resolveWith(_unfilledButtonOverlay),
     ),
   );
 
@@ -541,14 +524,8 @@ class LightTheme {
           return _neutralBlack;
         },
       ),
-      overlayColor: WidgetStateProperty.resolveWith(
-        (states) {
-          if (states.contains(WidgetState.pressed)) return _backgroundPressed;
-          if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) return _backgroundHover;
-
-          return _staticTransparent;
-        },
-      ),
+      side: WidgetStateProperty.resolveWith(_buttonFocusSide),
+      overlayColor: WidgetStateProperty.resolveWith(_unfilledButtonOverlay),
       padding: const WidgetStatePropertyAll(
         EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       ),
@@ -598,11 +575,9 @@ class LightTheme {
       overlayColor: WidgetStateProperty.resolveWith(
         (states) {
           if (states.contains(WidgetState.disabled)) return _staticTransparent;
-          if (states.contains(WidgetState.hovered) ||
-              states.contains(WidgetState.focused) ||
-              states.contains(WidgetState.selected))
-            return _backgroundSystemHover;
-          if (states.contains(WidgetState.pressed)) return _backgroundSystemPressed;
+          if (states.contains(WidgetState.pressed)) return _blendPressed;
+          if (states.contains(WidgetState.focused) || states.contains(WidgetState.selected)) return _blend;
+          if (states.contains(WidgetState.hovered)) return _neutralBlend;
 
           return null;
         },
@@ -995,35 +970,26 @@ class LightTheme {
     height: 40,
   );
 
-  final _customFilledIconButtonTheme = CustomFilledIconButtonTheme(
-    iconButton: IconButtonThemeData(
-      style: ButtonStyle(
-        foregroundColor: const WidgetStatePropertyAll(_specialStaticWhite),
-        backgroundColor: WidgetStateProperty.resolveWith(
-          (states) {
-            if (states.contains(WidgetState.selected)) {
-              return _accent;
-            }
-
-            return _neutralDark;
-          },
-        ),
+  late final _filledIconButtonTheme = IconButtonThemeData(
+    style: _iconButtonThemeData.style?.copyWith(
+      foregroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.disabled) ? _specialStaticWhiteDisabled : _specialStaticWhite,
       ),
-    ),
-    iconButtonInProgress: IconButtonThemeData(
-      style: ButtonStyle(
-        foregroundColor: const WidgetStatePropertyAll(_specialStaticWhite),
-        backgroundColor: WidgetStateProperty.resolveWith(
-          (states) {
-            if (states.contains(WidgetState.selected)) {
-              return _accent;
-            }
-
-            return _neutralDark;
-          },
-        ),
+      backgroundColor: WidgetStateProperty.resolveWith(
+        (states) {
+          if (states.contains(WidgetState.disabled)) return _neutralLightDisabled;
+          if (states.contains(WidgetState.selected)) return _accent;
+          return _neutralDark;
+        },
       ),
+      side: WidgetStateProperty.resolveWith((states) => _buttonFocusSide(states, filled: true)),
+      overlayColor: WidgetStateProperty.resolveWith(_filledButtonOverlay),
     ),
+  );
+
+  late final _customFilledIconButtonTheme = CustomFilledIconButtonTheme(
+    iconButton: _filledIconButtonTheme,
+    iconButtonInProgress: _filledIconButtonTheme,
   );
 
   final _customMissSpelledTextTheme = const CustomMissSpelledTextTheme(
@@ -1055,7 +1021,7 @@ class LightTheme {
     primaryColor: _accent,
     colorScheme: _colorScheme,
     hoverColor: _staticTransparent,
-    focusColor: _staticTransparent,
+    focusColor: _blendHover,
 
     // TYPOGRAPHY & ICONOGRAPHY
     textTheme: _textTheme,

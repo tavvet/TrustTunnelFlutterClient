@@ -94,33 +94,33 @@ class CustomSnackBar extends SnackBar {
   @override
   double? get elevation => 0;
 
-  ThemeData _getActionTheme(BuildContext context) => context.theme.copyWith(
-    hoverColor: Colors.transparent,
-    splashColor: Colors.transparent,
-    disabledColor: Colors.transparent,
-    focusColor: Colors.transparent,
-    highlightColor: Colors.transparent,
-    buttonTheme: context.theme.buttonTheme.copyWith(
-      hoverColor: Colors.transparent,
-      splashColor: Colors.transparent,
-      focusColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-    ),
-    // TODO: Fix hover color
-    // Konstantin Gorynin <k.gorynin@adguard.com>, 15 October 2025
-    iconButtonTheme: const IconButtonThemeData(
-      style: ButtonStyle(
-        backgroundColor: WidgetStatePropertyAll(
-          Colors.transparent,
-        ),
+  ThemeData _getActionTheme(BuildContext context) {
+    final theme = context.theme;
+    final foreground = theme.snackBarTheme.closeIconColor ?? context.colors.specialStaticWhite;
+    ButtonStyle actionStyle(ButtonStyle? base, Color color) => (base ?? const ButtonStyle()).copyWith(
+      backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+      foregroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.disabled) ? color.withValues(alpha: 0.5) : color,
       ),
-    ),
-    textButtonTheme: const TextButtonThemeData(
-      style: ButtonStyle(
-        backgroundColor: WidgetStatePropertyAll(
-          Colors.transparent,
-        ),
+      side: WidgetStateProperty.resolveWith(
+        (states) => !states.contains(WidgetState.disabled) && states.contains(WidgetState.focused)
+            ? BorderSide(color: foreground, width: 3)
+            : BorderSide.none,
       ),
-    ),
-  );
+      overlayColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) return Colors.transparent;
+        if (states.contains(WidgetState.pressed)) return foreground.withValues(alpha: 0.2);
+        if (states.contains(WidgetState.focused)) return foreground.withValues(alpha: 0.12);
+        if (states.contains(WidgetState.hovered)) return foreground.withValues(alpha: 0.1);
+        return Colors.transparent;
+      }),
+    );
+
+    return theme.copyWith(
+      iconButtonTheme: IconButtonThemeData(style: actionStyle(theme.iconButtonTheme.style, foreground)),
+      textButtonTheme: TextButtonThemeData(
+        style: actionStyle(theme.textButtonTheme.style, theme.snackBarTheme.actionTextColor ?? foreground),
+      ),
+    );
+  }
 }

@@ -50,25 +50,47 @@ class CustomDropdownMenu<T> extends StatelessWidget {
             ? context.theme.extension<CustomDropdownMenuTheme>()!.enabled
             : context.theme.extension<CustomDropdownMenuTheme>()!.disabled,
       ),
-      child: DropdownMenu<T>(
-        initialSelection: value,
-        label: Text(labelText),
-        enabled: enabled,
-        expandedInsets: expanded ? EdgeInsets.zero : null,
-        onSelected: onChanged,
-        errorText: errorText,
-        hintText: labelText,
-        requestFocusOnTap: false,
-        dropdownMenuEntries: values
-            .map(
-              (e) => DropdownMenuEntry<T>(
-                value: e,
-                label: toText(e),
-                labelWidget: toWidget?.call(e),
+      // DropdownMenu keeps focus on a hidden text-editing node and handles
+      // Enter, but not the Select key on TV remotes. A selection-only dropdown
+      // gives each option real keyboard focus and returns it when closed.
+      child: MediaQuery.navigationModeOf(context) == NavigationMode.directional
+          ? DropdownButtonFormField<T>(
+              initialValue: value,
+              isExpanded: expanded,
+              onChanged: enabled ? onChanged : null,
+              decoration: InputDecoration(
+                labelText: labelText,
+                errorText: errorText,
+                enabled: enabled,
               ),
+              items: values
+                  .map(
+                    (item) => DropdownMenuItem<T>(
+                      value: item,
+                      child: toWidget?.call(item) ?? Text(toText(item)),
+                    ),
+                  )
+                  .toList(),
             )
-            .toList(),
-      ),
+          : DropdownMenu<T>(
+              initialSelection: value,
+              label: Text(labelText),
+              enabled: enabled,
+              expandedInsets: expanded ? EdgeInsets.zero : null,
+              onSelected: onChanged,
+              errorText: errorText,
+              hintText: labelText,
+              requestFocusOnTap: false,
+              dropdownMenuEntries: values
+                  .map(
+                    (e) => DropdownMenuEntry<T>(
+                      value: e,
+                      label: toText(e),
+                      labelWidget: toWidget?.call(e),
+                    ),
+                  )
+                  .toList(),
+            ),
     ),
   );
 }

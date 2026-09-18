@@ -58,57 +58,49 @@ class CustomRadioListTile<T> extends StatelessWidget {
       color: gestureEnabled ? context.colors.neutralLight : context.colors.neutralLightDisabled,
     );
 
-    return InkWell(
-      onTap: gestureEnabled ? () => onChanged?.call(value) : null,
-      child: Ink(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CustomRadio<T>(
-                value: value,
-                groupValue: groupValue,
-                activeColor: radioColor,
-                onChanged: onChanged != null ? (_) => onChanged?.call(value) : null,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: title != null
-                          ? Text(
-                              title!,
-                              style: titleTextStyle,
-                            )
-                          : titleWidget!,
+    return ExcludeFocus(
+      excluding: !gestureEnabled,
+      child: MergeSemantics(
+        child: InkWell(
+          onTap: gestureEnabled ? () => onChanged?.call(value) : null,
+          child: Ink(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ExcludeFocus(
+                    child: IgnorePointer(
+                      child: CustomRadio<T>(
+                        value: value,
+                        groupValue: groupValue,
+                        activeColor: radioColor,
+                        onChanged: gestureEnabled ? (_) => onChanged?.call(value) : null,
+                      ),
                     ),
-                    if (subTitle != null)
-                      Text(
-                        subTitle!,
-                        style: bodyTextStyle,
-                      ),
-                    if (error != null)
-                      Text(
-                        error!,
-                        style: context.textTheme.bodyMedium?.copyWith(
-                          color: context.colors.error,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: title != null ? Text(title!, style: titleTextStyle) : titleWidget!,
                         ),
-                      ),
+                        if (subTitle != null) Text(subTitle!, style: bodyTextStyle),
+                        if (error != null)
+                          Text(error!, style: context.textTheme.bodyMedium?.copyWith(color: context.colors.error)),
+                      ],
+                    ),
+                  ),
+                  if (iconPath != null) ...[
+                    const SizedBox(width: 16),
+                    CustomIcon.medium(icon: iconPath!, color: iconColor),
                   ],
-                ),
+                ],
               ),
-              if (iconPath != null) ...[
-                const SizedBox(width: 16),
-                CustomIcon.medium(
-                  icon: iconPath!,
-                  color: iconColor,
-                ),
-              ],
-            ],
+            ),
           ),
         ),
       ),

@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:trusttunnel/common/extensions/context_extensions.dart';
 import 'package:trusttunnel/common/localization/localization.dart';
 import 'package:trusttunnel/data/model/vpn_log.dart';
 import 'package:trusttunnel/feature/settings/query_log/widgets/query_log_card.dart';
@@ -19,6 +21,7 @@ class _QueryLogScreenViewState extends State<QueryLogScreenView> {
   List<VpnLog> _logs = [];
 
   late final ScrollController _scrollController;
+  final FocusNode _logFocusNode = FocusNode(debugLabel: 'Connection log');
 
   @override
   void initState() {
@@ -48,18 +51,62 @@ class _QueryLogScreenViewState extends State<QueryLogScreenView> {
       appBar: CustomAppBar(
         title: context.ln.connectionLog,
       ),
-      body: _logs.isEmpty
-          ? const QueryLogEmptyPlaceholder()
-          : _QueryLogListView(
-              logs: _logs,
-              controller: _scrollController,
-            ),
+      body: _logs.isEmpty ? const QueryLogEmptyPlaceholder() : _buildLogList(context),
     ),
   );
+
+  Widget _buildLogList(BuildContext context) {
+    final list = _QueryLogListView(logs: _logs, controller: _scrollController);
+    if (MediaQuery.navigationModeOf(context) != NavigationMode.directional) {
+      return list;
+    }
+
+    // Log entries are read-only, so the list itself needs a focus stop for a
+    // remote. Keep left/right available for returning to the navigation rail.
+    return Focus(
+      focusNode: _logFocusNode,
+      onFocusChange: (_) => setState(() {}),
+      onKeyEvent: _onLogKey,
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: _logFocusNode.hasFocus ? context.colors.accent : Colors.transparent,
+              width: 3,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.all(3),
+          child: list,
+        ),
+      ),
+    );
+  }
+
+  KeyEventResult _onLogKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final key = event.logicalKey;
+    if ((key != LogicalKeyboardKey.arrowUp && key != LogicalKeyboardKey.arrowDown) || !_scrollController.hasClients) {
+      return KeyEventResult.ignored;
+    }
+
+    final position = _scrollController.position;
+    // This list is reversed: moving visually upward increases its offset.
+    final delta = position.viewportDimension * (key == LogicalKeyboardKey.arrowUp ? 0.6 : -0.6);
+    final target = (position.pixels + delta).clamp(position.minScrollExtent, position.maxScrollExtent);
+    if (target == position.pixels) return KeyEventResult.ignored;
+    _scrollController.animateTo(target, duration: const Duration(milliseconds: 160), curve: Curves.easeOut);
+    return KeyEventResult.handled;
+  }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _logFocusNode.dispose();
     super.dispose();
   }
 }

@@ -10,7 +10,7 @@ enum CustomFloatingActionButtonType {
   large,
 }
 
-class CustomFloatingActionButton extends StatelessWidget {
+class CustomFloatingActionButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback? onPressed;
   final CustomFloatingActionButtonType type;
@@ -45,44 +45,65 @@ class CustomFloatingActionButton extends StatelessWidget {
        label = null;
 
   @override
+  State<CustomFloatingActionButton> createState() => _CustomFloatingActionButtonState();
+}
+
+class _CustomFloatingActionButtonState extends State<CustomFloatingActionButton> {
+  bool _hasFocus = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).floatingActionButtonTheme;
+    final showFocus =
+        _hasFocus && widget.onPressed != null && MediaQuery.navigationModeOf(context) == NavigationMode.directional;
+    final baseShape = theme.shape;
+    final shape = showFocus
+        ? (baseShape is OutlinedBorder ? baseShape : RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)))
+              .copyWith(side: BorderSide(color: context.colors.neutralBlack, width: 3))
+        : baseShape;
     final iconWidget = CustomIcon.medium(
-      icon: icon,
+      icon: widget.icon,
       color: theme.foregroundColor ?? context.colors.accent,
     );
 
-    final Widget button = switch (type) {
+    final Widget button = switch (widget.type) {
       CustomFloatingActionButtonType.standart => FloatingActionButton(
-        onPressed: onPressed,
+        onPressed: widget.onPressed,
+        shape: shape,
         child: iconWidget,
       ),
       CustomFloatingActionButtonType.extended =>
-        label != null
+        widget.label != null
             ? FloatingActionButton.extended(
-                onPressed: onPressed,
+                onPressed: widget.onPressed,
+                shape: shape,
                 icon: iconWidget,
                 label: Text(
-                  label!,
+                  widget.label!,
                   style: context.theme.textTheme.labelLarge?.copyWith(color: theme.foregroundColor),
                 ),
               )
             : FloatingActionButton(
-                onPressed: onPressed,
+                onPressed: widget.onPressed,
+                shape: shape,
                 child: iconWidget,
               ),
       CustomFloatingActionButtonType.small => FloatingActionButton.small(
-        onPressed: onPressed,
+        onPressed: widget.onPressed,
+        shape: shape,
         child: iconWidget,
       ),
       CustomFloatingActionButtonType.large => FloatingActionButton.large(
-        onPressed: onPressed,
+        onPressed: widget.onPressed,
+        shape: shape,
         child: iconWidget,
       ),
     };
 
-    return HoverThemeProvider(
-      child: button,
+    return Focus(
+      canRequestFocus: false,
+      onFocusChange: (hasFocus) => setState(() => _hasFocus = hasFocus),
+      child: HoverThemeProvider(child: button),
     );
   }
 }
