@@ -8,7 +8,7 @@ uses Android's television UI mode or Leanback system feature, not screen size.
 ## Build and install
 
 Follow the SDK, GitHub Packages and signing setup in the root README first.
-The project requires Flutter 3.38.3, Android SDK 36 and NDK 29.0.14206865.
+The project requires Flutter 3.47.7 or newer, Android SDK 36 and NDK 29.0.14206865.
 Use a compatible JDK such as Java 17 or 21. The native VPN dependency requires a
 GitHub token with `read:packages`, provided as `GPR_KEY` or the Gradle `gpr.key`
 property; never commit the token.

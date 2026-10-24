@@ -1,3 +1,8 @@
+> [!NOTE]
+> **This is a fork** of [TrustTunnel/TrustTunnelFlutterClient](https://github.com/TrustTunnel/TrustTunnelFlutterClient)
+> with Android TV support and server import from a phone via QR code or LAN.
+> See [FORK.md](FORK.md) for the full list of differences.
+
 <p align="center">
   <a href="https://cdn.adguardcdn.com/website/github.com/TrustTunnel/logo_light.svg#gh-light-mode-only">
     <img src="https://cdn.adguardcdn.com/website/github.com/TrustTunnel/logo_light.svg#gh-light-mode-only" width="300" alt="TrustTunnel" />
